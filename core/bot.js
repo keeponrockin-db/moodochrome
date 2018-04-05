@@ -224,9 +224,6 @@ class Monochrome {
       if (!msg.author) {
         return; // Sometimes an empty message with no author appears. *shrug*
       }
-      if (msg.author.bot) {
-        return;
-      }
       if (this.commandManager_.processInput(this.bot_, msg)) {
         return;
       }
