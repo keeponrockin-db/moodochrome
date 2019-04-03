@@ -121,7 +121,7 @@ function stringContainsInviteLink(str) {
 
 let botExists = false;
 class Monochrome {
-  constructor(configFilePath, commandsDirectoryPath, messageProcessorsDirectoryPath, settingsFilePath, logDirectoryPath, onShutdown) {
+  constructor(configFilePath, commandsDirectoryPath, messageProcessorsDirectoryPath, reactionProcessorsDirectoryPath, settingsFilePath, logDirectoryPath, onShutdown) {
     if (botExists) {
       throw new Error('This process has already constructed a Monochrome object. You can\'t run multiple bots in one process.');
     }
@@ -129,6 +129,7 @@ class Monochrome {
     this.configFilePath_ = configFilePath;
     this.commandsDirectoryPath_ = commandsDirectoryPath;
     this.messageProcessorsDirectoryPath_ = messageProcessorsDirectoryPath;
+    this.reactionProcessorsDirectoryPath_ = reactionProcessorsDirectoryPath;
     this.settingsFilePath_ = settingsFilePath;
     this.onShutdown_ = onShutdown || (() => {});
 
@@ -196,6 +197,9 @@ class Monochrome {
     });
 
     this.bot_.on('messageReactionAdd', (msg, emoji, userId) => {
+      if (this.reactionProcessorManager_.processInput(msg, emoji, userId)) {
+        return;
+      }
       navigationManager.handleEmojiToggled(this.bot_, msg, emoji, userId);
       replyDeleter.handleReaction(msg, userId, emoji);
     });
@@ -205,6 +209,9 @@ class Monochrome {
     });
 
     this.bot_.on('messageReactionRemove', (msg, emoji, userId) => {
+      if (this.reactionProcessorManager_.processInput(msg, emoji, userId)) {
+        return;
+      }
       navigationManager.handleEmojiToggled(this.bot_, msg, emoji, userId);
     });
 
@@ -223,9 +230,6 @@ class Monochrome {
     try {
       if (!msg.author) {
         return; // Sometimes an empty message with no author appears. *shrug*
-      }
-      if (msg.author.bot) {
-        return;
       }
       if (this.commandManager_.processInput(this.bot_, msg)) {
         return;
@@ -260,6 +264,7 @@ class Monochrome {
     let settingsManagerCommands = this.settingsManager_.collectCommands();
     let settingsGetter = this.settingsManager_.createSettingsGetter();
     this.messageProcessorManager_ = new (reload('./message_processor_manager.js'))(logger);
+    this.reactionProcessorManager_ = new (reload('./reaction_processor_manager.js'))(logger);
     this.commandManager_ = new (reload('./command_manager.js'))(() => this.reloadCore_(), () => this.shutdown_(), logger, this.config_, settingsGetter);
     this.commandManager_.load(this.commandsDirectoryPath_, settingsManagerCommands).then(() => {
       let settingsFilePaths = [];
@@ -271,6 +276,7 @@ class Monochrome {
       logger.logFailure(LOGGER_TITLE, 'Error loading command manager', err);
     });
     this.messageProcessorManager_.load(this.messageProcessorsDirectoryPath_);
+    this.reactionProcessorManager_.load(this.reactionProcessorsDirectoryPath_);
   }
 
   shutdown_() {

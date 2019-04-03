@@ -48,6 +48,44 @@ class LoggerImplementation {
     }
   }
 
+  static logReactionReaction(loggerState, title, msg, emoji, userId, inputReactorTitle, succeeded, failureMessage) {
+    try {
+      let logMessageBuilder = new LogMessageBuilder();
+      logMessageBuilder.setColor(ansiColors.YELLOW);
+      if (msg.channel.guild) {
+        logMessageBuilder.append(msg.channel.guild.name);
+        logMessageBuilder.setColor(ansiColors.RESET);
+        logMessageBuilder.append(' >> ');
+        logMessageBuilder.setColor(ansiColors.YELLOW);
+        logMessageBuilder.append(msg.channel.name);
+        logMessageBuilder.setColor(ansiColors.RESET);
+        logMessageBuilder.append(' >> ');
+      }
+      if (inputReactorTitle) {
+        logMessageBuilder.append('[' + inputReactorTitle + '] ');
+      }
+      logMessageBuilder.setColor(ansiColors.RESET);
+      logMessageBuilder.append(' >> ');
+      logMessageBuilder.append(emoji.name);
+
+      if (succeeded) {
+        logMessageBuilder.setColor(ansiColors.RESET);
+      }
+
+      if (succeeded) {
+        LoggerImplementation.logSuccess(loggerState, title, logMessageBuilder);
+      } else {
+        if (failureMessage) {
+          logMessageBuilder.setColor(ansiColors.RED);
+          logMessageBuilder.append(' FAILED (' + failureMessage + ')');
+        }
+        LoggerImplementation.logFailure(loggerState, title, logMessageBuilder);
+      }
+    } catch (err) {
+      console.warn('Failed to log input reaction. Error: ' + err);
+    }
+  }
+
   static logSuccess(loggerState, title, message) {
     if (LoggerImplementation.checkState_(loggerState)) {
       LoggerImplementation.logMessage(loggerState, title, '\u001b[32m', message);

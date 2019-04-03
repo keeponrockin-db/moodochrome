@@ -59,6 +59,20 @@ class Logger {
   }
 
   /**
+  * Log when the bot reacts to a reaction.
+  * @param {String} title - The title of the log message.
+  * @param {Eris.Message} msg - The message that was reacted to.
+  * @param {String} emoji
+  * @param {String} userId
+  * @param {String} inputReactorTitle - If this was in response to a message processor, then the name of that message processor. If no title, pass in an empty string.
+  * @param {Boolean} succeeded - Whether the log message should appear as a successful event (green), or unsuccessful one (red).
+  * @param {String} [failureMessage] - If the reaction failed, a brief description of why.
+  */
+ logReactionReaction(title, msg, emoji, userId, inputReactorTitle, succeeded, failureMessage) {
+  implementation.logReactionReaction(this, title, msg, emoji, userId, inputReactorTitle, succeeded, failureMessage);
+}
+
+  /**
   * Log a message with a success color (green).
   * @param {String} title - The title of the message, which will be displayed in green.
   * @param {(String|LogMessageBuilder)} message - The message to log.
