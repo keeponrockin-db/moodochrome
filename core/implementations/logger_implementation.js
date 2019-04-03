@@ -66,6 +66,8 @@ class LoggerImplementation {
       }
       logMessageBuilder.setColor(ansiColors.RESET);
       logMessageBuilder.append(' >> ');
+      logMessageBuilder.append(userId);
+      logMessageBuilder.append(': ');
       logMessageBuilder.append(emoji.name);
 
       if (succeeded) {
